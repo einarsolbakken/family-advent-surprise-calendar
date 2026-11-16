@@ -3,28 +3,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, UserPlus } from "lucide-react";
+import { normalizePhone } from "@/lib/phone";
 
 export function FamilyMembers() {
   const [members, setMembers] = useState<string[]>([]);
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const load = async () => {
-    const { data, error } = await supabase.from("calendar_members").select("email").order("email");
+    const { data, error } = await supabase.from("calendar_phone_members").select("phone").order("phone");
     if (error) setError("Kunne ikke hente familielisten.");
-    else setMembers((data ?? []).map((r) => r.email));
+    else setMembers((data ?? []).map((r) => r.phone));
   };
   useEffect(() => { void load(); }, []);
   return <section className="mb-10 border-b pb-8">
     <h2 className="mb-4 text-2xl font-bold">Familietilgang</h2>
     <form className="flex flex-wrap gap-2" onSubmit={async (e) => {
-      e.preventDefault(); setBusy(true); setError("");
-      const { error } = await supabase.from("calendar_members").insert({ email: email.trim().toLowerCase() });
-      if (error) setError("Kunne ikke legge til adressen. Er den allerede på listen?");
-      else { setEmail(""); await load(); }
+      e.preventDefault(); setError("");
+      const normalized = normalizePhone(phone);
+      if (!normalized) { setError("Skriv et gyldig telefonnummer med landskode."); return; }
+      setBusy(true);
+      const { error } = await supabase.from("calendar_phone_members").insert({ phone: normalized });
+      if (error) setError("Kunne ikke legge til nummeret. Er det allerede på listen?");
+      else { setPhone(""); await load(); }
       setBusy(false);
     }}>
-      <Input aria-label="Familiemedlemmets e-postadresse" type="email" required maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-postadresse" className="min-w-0 flex-1" />
+      <Input aria-label="Familiemedlemmets telefonnummer" type="tel" required maxLength={25} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+47 123 45 678" className="min-w-0 flex-1" />
       <Button disabled={busy}><UserPlus />Legg til</Button>
     </form>
     {error && <p role="alert" className="mt-3 text-destructive">{error}</p>}
@@ -33,7 +37,7 @@ export function FamilyMembers() {
         <span className="min-w-0 break-all">{member}</span>
         <Button size="icon" variant="ghost" aria-label={`Fjern ${member}`} title="Fjern tilgang" onClick={async () => {
           if (!window.confirm(`Fjerne tilgang for ${member}?`)) return;
-          const { error } = await supabase.from("calendar_members").delete().eq("email", member);
+            const { error } = await supabase.from("calendar_phone_members").delete().eq("phone", member);
           if (error) setError("Kunne ikke fjerne tilgangen."); else await load();
         }}><Trash2 /></Button>
       </li>)}

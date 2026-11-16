@@ -29,6 +29,21 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_phone_members: {
+        Row: {
+          created_at: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       doors: {
         Row: {
           caption: string | null

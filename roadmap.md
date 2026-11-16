@@ -1,5 +1,8 @@
 # GitHub Pages calendar
 
+- [x] Replace family sign-in and approvals with phone numbers and SMS codes, without profiles.
+- [ ] Activate hosted phone/SMS sign-in and verify a real code; requires owner configuration in Lovable Cloud phone settings.
+
 - [x] Add a static GitHub Pages build configuration with repository-aware paths and automated deployment.
 - [x] Serve private calendar images through an authenticated Lovable-hosted endpoint with Oslo date locks.
 - [x] Add approved-family access and owner-managed invitations.

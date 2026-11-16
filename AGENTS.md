@@ -33,4 +33,5 @@ use the editor.
 - Only verified owners in the Vite development preview bypass door dates for testing; production always uses Oslo date locks.
 - Owner roles are provisioned only after identifying the intended owner; claim_admin checks existing ownership and never grants it to the first visitor.
 - Pages ships only dist/client from a separate SPA build; private reads use the Lovable-hosted bearer-authenticated calendar endpoint with exact-origin CORS and server-side family approval.
-- Approved family emails live in an owner-managed RLS table; private storage remains owner-only and the server issues five-minute image links only for authorized, unlocked doors.
+- Approved family phone numbers live in an owner-managed RLS table; access checks require a confirmed phone in Auth rather than editable metadata, so unverified numbers cannot grant access. Private storage remains owner-only and image links expire after five minutes.
+- Normalize phone input to E.164 before Auth and membership writes to keep SMS delivery and access matching consistent.
