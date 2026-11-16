@@ -1,5 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
-import { createRouter, rootRouteId } from "@tanstack/react-router";
+import { createMemoryHistory, createRouter, rootRouteId } from "@tanstack/react-router";
 import { describe, expect, it } from "vitest";
 
 import { routeTree } from "@/routeTree.gen";
@@ -15,9 +15,9 @@ describe("App routing", () => {
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
   it("matches the renamed repository on first load with or without a trailing slash", () => {
-    const router = createRouter({ routeTree, basepath: '/krossernKalender/', context: { queryClient: new QueryClient() } });
-    expect(router.matchRoutes('/krossernKalender/').at(-1)?.routeId).toBe('/');
-    expect(router.matchRoutes('/krossernKalender').at(-1)?.routeId).toBe('/');
-    expect(router.matchRoutes('/krossernKalender/admin').at(-1)?.routeId).toBe('/admin');
+    for (const [path, routeId] of [['/krossernKalender/', '/'], ['/krossernKalender', '/'], ['/krossernKalender/admin', '/admin']]) {
+      const router = createRouter({ routeTree, basepath: '/krossernKalender/', history: createMemoryHistory({ initialEntries: [path] }), context: { queryClient: new QueryClient() } });
+      expect(router.matchRoutes(router.latestLocation).at(-1)?.routeId).toBe(routeId);
+    }
   });
 });
