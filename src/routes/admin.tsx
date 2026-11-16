@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { FamilyAccess } from "@/components/family-access";
+import { FamilyMembers } from "@/components/family-members";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -77,10 +78,7 @@ function Admin() {
     return (
       <main className="mx-auto max-w-md px-4 py-20 text-center">
         <h1 className="text-4xl font-bold">Fyll pakkene</h1>
-        <p className="mt-3 text-muted-foreground">Logg inn for å legge inn bilder. Den første som logger inn blir eier av kalenderen.</p>
-        <Button className="mt-6" variant="secondary" onClick={() => lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/admin" })}>
-          Fortsett med Google
-        </Button>
+        <FamilyAccess />
       </main>
     );
 
@@ -88,7 +86,7 @@ function Admin() {
     return (
       <main className="mx-auto max-w-md px-4 py-20 text-center">
         <h1 className="text-3xl font-bold">Ingen tilgang</h1>
-        <p className="mt-3 text-muted-foreground">Bare eieren av kalenderen kan fylle pakkene.</p>
+        <p className="mt-3 text-muted-foreground">Bare eieren av kalenderen kan fylle pakkene. Eierkontoen må først godkjennes.</p>
         <Button className="mt-6" variant="secondary" onClick={() => supabase.auth.signOut()}>Logg ut</Button>
       </main>
     );
@@ -100,6 +98,7 @@ function Admin() {
         <Button variant="secondary" onClick={() => supabase.auth.signOut()}>Logg ut</Button>
       </div>
       <p className="mb-6 text-muted-foreground">{Object.keys(rows).length} av 24 luker har bilde.</p>
+      <FamilyMembers />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 24 }, (_, i) => i + 1).map((day) => (
           <DoorEditor key={day} day={day} row={rows[day]} onUpload={upload} onCaption={saveCaption} />

@@ -1,0 +1,66 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
+import { calendarDays } from "@/lib/advent";
+import { allowedCalendarOrigin, calendarAccessDecision } from "@/lib/calendar-security";
+import type { DoorView } from "@/lib/calendar-api";
+
+export const Route = createFileRoute("/api/public/calendar")({
+  server: {
+    handlers: {
+      OPTIONS: async ({ request }) => {
+        const origin = request.headers.get("origin");
+        if (!allowedCalendarOrigin(origin, new URL(request.url).origin, process.env['CALENDAR_PAGES_ORIGIN'])) {
+          return new Response(null, { status: 403 });
+        }
+        return new Response(null, { status: 204, headers: {
+          ...(origin ? { "Access-Control-Allow-Origin": origin } : {}),
+          "Access-Control-Allow-Methods": "GET, OPTIONS",
+          "Access-Control-Allow-Headers": "Authorization",
+          "Vary": "Origin",
+        } });
+      },
+      GET: async ({ request }) => {
+        const origin = request.headers.get("origin");
+        const headers: Record<string, string> = { "Cache-Control": "private, no-store", "Vary": "Origin, Authorization" };
+        if (!allowedCalendarOrigin(origin, new URL(request.url).origin, process.env['CALENDAR_PAGES_ORIGIN'])) {
+          return Response.json({ error: "Forbidden" }, { status: 403, headers });
+        }
+        if (origin) headers['Access-Control-Allow-Origin'] = origin;
+        const token = request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
+        if (!token) return Response.json({ error: "Unauthorized" }, { status: 401, headers });
+        const url = process.env['SUPABASE_URL'];
+        const key = process.env['SUPABASE_PUBLISHABLE_KEY'];
+        if (!url || !key) return Response.json({ error: "Unavailable" }, { status: 503, headers });
+        const client = createClient(url, key, {
+          auth: { persistSession: false, autoRefreshToken: false },
+          global: { headers: { Authorization: `Bearer ${token}` }, fetch: (input, init) => {
+            const h = new Headers(init?.headers);
+            if (key.startsWith('sb_') && h.get('Authorization') === `Bearer ${key}`) h.delete('Authorization');
+            h.set('apikey', key);
+            return fetch(input, { ...init, headers: h });
+          } },
+        });
+        const { data: { user }, error } = await client.auth.getUser(token);
+        if (error || !user) return Response.json({ error: "Unauthorized" }, { status: 401, headers });
+        const { data: approved, error: accessError } = await client.rpc("has_calendar_access");
+        const status = calendarAccessDecision(true, !accessError && approved === true);
+        if (status !== 200) return Response.json({ error: "Forbidden" }, { status, headers });
+        const { data: owner } = await client.rpc("has_role", { _user_id: user.id, _role: "admin" });
+        const days = calendarDays(new Date(), import.meta.env.DEV && owner === true);
+        // Private storage signing is privileged; identity and family access were checked above.
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const result: DoorView[] = Array.from({ length: 24 }, (_, i) => ({ day: i + 1, unlocked: days.includes(i + 1), imageUrl: null, caption: null }));
+        if (days.length) {
+          const { data: rows, error: rowsError } = await supabaseAdmin.from("doors").select("day,image_path,caption").in("day", days);
+          if (rowsError) return Response.json({ error: "Unavailable" }, { status: 503, headers });
+          await Promise.all((rows ?? []).map(async (row) => {
+            const { data } = await supabaseAdmin.storage.from("advent").createSignedUrl(row.image_path, 300);
+            const door = result.find((d) => d.day === row.day);
+            if (door) { door.imageUrl = data?.signedUrl ?? null; door.caption = row.caption; }
+          }));
+        }
+        return Response.json(result, { headers });
+      },
+    },
+  },
+});

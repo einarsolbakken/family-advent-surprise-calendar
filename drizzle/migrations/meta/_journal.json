@@ -8,6 +8,13 @@
       "when": 1794829880715,
       "tag": "0000_advent_calendar",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794832726706,
+      "tag": "0001_approved_family_access",
+      "breakpoints": true
     }
   ]
 }

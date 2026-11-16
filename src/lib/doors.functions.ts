@@ -1,18 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { calendarDays } from "./advent";
 
 export type DoorView = { day: number; unlocked: boolean; imageUrl: string | null; caption: string | null };
 
 // Locked doors never leave the server with an image, so nobody can peek early.
-export const getDoors = createServerFn({ method: "GET" }).handler(async (): Promise<DoorView[]> => {
-  const open = calendarDays(new Date(), import.meta.env.DEV);
+export const getDoors = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).handler(async ({ context }): Promise<DoorView[]> => {
+  const { data: approved } = await context.supabase.rpc("has_calendar_access");
+  if (!approved) throw new Error("Forbidden");
+  const { data: owner } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+  const open = calendarDays(new Date(), import.meta.env.DEV && owner === true);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const rows = open.length
     ? (await supabaseAdmin.from("doors").select("day,image_path,caption").in("day", open)).data ?? []
     : [];
   const signed = await Promise.all(
     rows.map(async (r) => {
-      const { data } = await supabaseAdmin.storage.from("advent").createSignedUrl(r.image_path, 60 * 60 * 6);
+      const { data } = await supabaseAdmin.storage.from("advent").createSignedUrl(r.image_path, 300);
       return { ...r, url: data?.signedUrl ?? null };
     }),
   );

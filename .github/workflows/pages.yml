@@ -1,0 +1,55 @@
+name: Publish calendar to GitHub Pages
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/configure-pages@v5
+      - run: bun install --frozen-lockfile
+      - name: Validate public configuration
+        env:
+          API_ORIGIN: ${{ vars.VITE_CALENDAR_API_ORIGIN }}
+          AUTH_URL: ${{ vars.VITE_SUPABASE_URL }}
+          AUTH_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          test -n "$API_ORIGIN" || { echo 'Set VITE_CALENDAR_API_ORIGIN to the published Lovable origin'; exit 1; }
+          test -n "$AUTH_URL" || { echo 'Set VITE_SUPABASE_URL from the public app configuration'; exit 1; }
+          test -n "$AUTH_KEY" || { echo 'Set VITE_SUPABASE_PUBLISHABLE_KEY from the public app configuration'; exit 1; }
+      - name: Build static calendar
+        env:
+          GITHUB_PAGES: 'true'
+          VITE_CALENDAR_API_ORIGIN: ${{ vars.VITE_CALENDAR_API_ORIGIN }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          REPO="${GITHUB_REPOSITORY#*/}"
+          if [[ "$REPO" == *.github.io ]]; then export PAGES_BASE_PATH=/; else export PAGES_BASE_PATH="/$REPO/"; fi
+          bunx vite build
+          bun scripts/prepare-pages.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/client
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

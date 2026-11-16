@@ -30,5 +30,7 @@ use the editor.
 <!-- LOVABLE:END -->
 
 - Door unlock logic lives in src/lib/advent.ts and is enforced server-side in getDoors; locked doors never get image URLs.
-- Only the Vite development preview bypasses door dates for testing; production always uses Oslo date locks, so publishing cannot expose future images.
-- Owner role is claimed by the first sign-in via claim_admin(); uploads go to the private "advent" bucket guarded by has_role.
+- Only verified owners in the Vite development preview bypass door dates for testing; production always uses Oslo date locks.
+- Owner roles are provisioned only after identifying the intended owner; claim_admin checks existing ownership and never grants it to the first visitor.
+- Pages ships only dist/client from a separate SPA build; private reads use the Lovable-hosted bearer-authenticated calendar endpoint with exact-origin CORS and server-side family approval.
+- Approved family emails live in an owner-managed RLS table; private storage remains owner-only and the server issues five-minute image links only for authorized, unlocked doors.
