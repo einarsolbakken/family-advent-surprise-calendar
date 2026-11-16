@@ -15,7 +15,7 @@ describe("App routing", () => {
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
   it("matches the renamed repository on first load with or without a trailing slash", () => {
-    const cases: Array<[string, string]> = [['/krossernKalender/', '/'], ['/krossernKalender', '/'], ['/krossernKalender/admin', '/admin']];
+    const cases: Array<[string, string]> = [['/krossernKalender/', '/'], ['/krossernKalender', '/']];
     for (const [path, routeId] of cases) {
       const router = createRouter({ routeTree, basepath: '/krossernKalender/', history: createMemoryHistory({ initialEntries: [path] }), context: { queryClient: new QueryClient() } });
       expect(router.matchRoutes(router.latestLocation).at(-1)?.routeId).toBe(routeId);
