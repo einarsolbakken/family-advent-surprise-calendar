@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { calendarEndpointOrigin, requestCalendar } from "@/lib/calendar-endpoint";
 
 export type DoorView = { day: number; unlocked: boolean; imageUrl: string | null; caption: string | null };
 
@@ -7,8 +8,8 @@ export function getFamilySession() { return sessionStorage.getItem(FAMILY_SESSIO
 export function clearFamilySession() { sessionStorage.removeItem(FAMILY_SESSION_KEY); }
 
 export async function signInFamily(password: string) {
-  const origin = import.meta.env['VITE_CALENDAR_API_ORIGIN'] || "";
-  const response = await fetch(`${origin}/api/public/calendar`, {
+  const origin = calendarEndpointOrigin(import.meta.env.DEV, import.meta.env['VITE_CALENDAR_API_ORIGIN']);
+  const response = await requestCalendar(`${origin}/api/public/calendar`, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password }), cache: "no-store",
   });
@@ -23,8 +24,8 @@ export async function fetchCalendar(): Promise<DoorView[]> {
   const { data: { session } } = await supabase.auth.getSession();
   const token = getFamilySession() || session?.access_token;
   if (!token) throw new Error("Logg inn for å åpne kalenderen.");
-  const origin = import.meta.env['VITE_CALENDAR_API_ORIGIN'] || "";
-  const response = await fetch(`${origin}/api/public/calendar`, {
+  const origin = calendarEndpointOrigin(import.meta.env.DEV, import.meta.env['VITE_CALENDAR_API_ORIGIN']);
+  const response = await requestCalendar(`${origin}/api/public/calendar`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });

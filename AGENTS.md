@@ -37,3 +37,4 @@ use the editor.
 - Shared family sessions never grant owner roles or development date bypass; owner uploads retain separate Lovable account authentication and role checks. Private storage remains owner-only and image links expire after five minutes.
 - Stage Pages files from Nitro's .output/public into dist/client after recursive safety checks; never copy .output/server, because Pages must contain only browser files.
 - Set the SPA maskPath to the same repository base path as the router and asset base; rendering the shell at / outside that base creates an initial not-found state and hydration mismatch.
+- Development calendar requests always use the same-origin preview server; static production builds use the configured API origin so unpublished changes cannot break preview login through stale hosted endpoints.
