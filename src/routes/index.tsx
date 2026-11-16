@@ -82,7 +82,7 @@ function Calendar() {
         </p>}
       </header>
 
-      {!ready ? <p className="text-center">Laster…</p> : !signedIn ? <FamilyAccess onSignedIn={() => setFamilySignedIn(true)} /> : query.isPending ? <p className="text-center">Laster kalenderen…</p> : query.error ? <div className="text-center"><p role="alert">{query.error.message}</p><Button className="mt-4" variant="secondary" onClick={() => query.refetch()}>Prøv igjen</Button></div> : <ol className="relative grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-5 md:grid-cols-6">
+      {!ready ? <p className="text-center">Laster…</p> : !signedIn ? <FamilyAccess onSignedIn={() => setFamilySignedIn(true)} /> : query.isPending ? <p className="animate-in fade-in duration-500 text-center">Laster kalenderen…</p> : query.error ? <div className="text-center"><p role="alert">{query.error.message}</p><Button className="mt-4" variant="secondary" onClick={() => query.refetch()}>Prøv igjen</Button></div> : <ol className="animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-700 ease-out relative grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-5 md:grid-cols-6">
         {ORDER.map((day, i) => {
           const door = byDay.get(day);
           if (!door) return null;

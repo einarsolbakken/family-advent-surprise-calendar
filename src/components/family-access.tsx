@@ -7,17 +7,20 @@ export function FamilyAccess({ onSignedIn }: { onSignedIn: () => void }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [password, setPassword] = useState("");
+  const [leaving, setLeaving] = useState(false);
   const signIn = async () => {
     setBusy(true);
     setError("");
     try {
       await signInFamily(password);
+      setLeaving(true);
+      await new Promise((r) => setTimeout(r, 400));
       setPassword("");
       onSignedIn();
     } catch (error) { setError(error instanceof Error ? error.message : "Kunne ikke logge inn."); }
     finally { setBusy(false); }
   };
-  return <div className="mx-auto max-w-sm py-8 text-center">
+  return <div className={`mx-auto max-w-sm py-8 text-center transition-all duration-400 ease-in ${leaving ? "scale-95 opacity-0 blur-sm" : ""}`}>
     <form className="flex flex-col gap-3 text-left" onSubmit={(event) => { event.preventDefault(); void signIn(); }}>
       <label htmlFor="family-password" className="sr-only">Familiepassord</label>
       <div className="family-password-frame rounded-lg p-1.5 transition-shadow focus-within:shadow-[var(--glow-gold)]">
