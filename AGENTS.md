@@ -30,7 +30,7 @@ use the editor.
 <!-- LOVABLE:END -->
 
 - Door unlock logic lives in src/lib/advent.ts and is enforced server-side in getDoors; locked doors never get image URLs.
-- Only verified owners in the Vite development preview bypass door dates for testing; production always uses Oslo date locks.
+- The Vite development preview opens every door for testing (any signed-in viewer); production always uses Oslo date locks.
 - Owner roles are provisioned only after identifying the intended owner; claim_admin checks existing ownership and never grants it to the first visitor.
 - Pages ships only dist/client from a separate SPA build; private reads use the Lovable-hosted bearer-authenticated calendar endpoint with exact-origin CORS and server-verified family sessions.
 - Shared family passwords are server secrets; the calendar endpoint issues expiring HMAC-signed read-only sessions, bound to the current password so password changes revoke access. Browser session storage contains only the session token, never the password.

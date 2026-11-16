@@ -48,7 +48,6 @@ export const Route = createFileRoute("/api/public/calendar")({
         if (origin) headers['Access-Control-Allow-Origin'] = origin;
         const token = request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
         if (!token) return Response.json({ error: "Unauthorized" }, { status: 401, headers });
-        let owner = false;
         if (token.startsWith("family.")) {
           const password = process.env['CALENDAR_FAMILY_PASSWORD'];
           const secret = process.env['CALENDAR_SESSION_SECRET'];
@@ -73,10 +72,8 @@ export const Route = createFileRoute("/api/public/calendar")({
         const { data: approved, error: accessError } = await client.rpc("has_calendar_access");
         const status = calendarAccessDecision(true, !accessError && approved === true);
         if (status !== 200) return Response.json({ error: "Forbidden" }, { status, headers });
-        const { data: isOwner } = await client.rpc("has_role", { _user_id: user.id, _role: "admin" });
-        owner = isOwner === true;
         }
-        const days = calendarDays(new Date(), import.meta.env.DEV && owner === true);
+        const days = calendarDays(new Date(), import.meta.env.DEV);
         // Shared sessions authorize read-only calendar access, never owner operations.
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const result: DoorView[] = Array.from({ length: 24 }, (_, i) => ({ day: i + 1, unlocked: days.includes(i + 1), imageUrl: null, caption: null }));
