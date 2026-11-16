@@ -79,7 +79,7 @@ function Admin() {
         <h1 className="text-4xl font-bold">Fyll pakkene</h1>
         <p className="my-5 text-muted-foreground">Bare eieren kan endre bildene.</p>
         <Button onClick={async () => {
-          const result = await lovable.auth.signInWithOAuth("lovable", { redirect_uri: window.location.origin });
+          const result = await lovable.auth.signInWithOAuth("lovable", { redirect_uri: `${window.location.origin}${import.meta.env.BASE_URL}` });
           if (result.error) toast.error("Kunne ikke logge inn som eier.");
         }}>Logg inn som eier</Button>
       </main>
