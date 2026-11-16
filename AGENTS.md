@@ -28,3 +28,6 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Door unlock logic lives in src/lib/advent.ts and is enforced server-side in getDoors; locked doors never get image URLs.
+- Owner role is claimed by the first sign-in via claim_admin(); uploads go to the private "advent" bucket guarded by has_role.
