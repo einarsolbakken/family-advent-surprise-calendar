@@ -1,5 +1,7 @@
 # GitHub Pages calendar
 
+- [x] Correct Pages packaging to stage the actual public build output and test private-file exclusion.
+
 - [x] Replace family sign-in and approvals with phone numbers and SMS codes, without profiles.
 - [ ] Activate hosted phone/SMS sign-in and verify a real code; requires owner configuration in Lovable Cloud phone settings.
 

@@ -35,3 +35,4 @@ use the editor.
 - Pages ships only dist/client from a separate SPA build; private reads use the Lovable-hosted bearer-authenticated calendar endpoint with exact-origin CORS and server-side family approval.
 - Approved family phone numbers live in an owner-managed RLS table; access checks require a confirmed phone in Auth rather than editable metadata, so unverified numbers cannot grant access. Private storage remains owner-only and image links expire after five minutes.
 - Normalize phone input to E.164 before Auth and membership writes to keep SMS delivery and access matching consistent.
+- Stage Pages files from Nitro's .output/public into dist/client after recursive safety checks; never copy .output/server, because Pages must contain only browser files.
