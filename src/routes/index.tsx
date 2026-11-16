@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -116,7 +116,7 @@ function Calendar() {
         })}
       </ol>}
 
-      <nav className="mt-8 flex justify-center gap-3"><Button asChild variant="link"><Link to="/admin">Fyll pakkene</Link></Button>{signedIn && <Button variant="ghost" onClick={() => { clearFamilySession(); setFamilySignedIn(false); setUserId(null); setActive(null); void supabase.auth.signOut(); }}>Logg ut</Button>}</nav>
+      {signedIn && <nav className="mt-8 flex justify-center"><Button variant="ghost" onClick={() => { clearFamilySession(); setFamilySignedIn(false); setUserId(null); setActive(null); void supabase.auth.signOut(); }}>Logg ut</Button></nav>}
 
       <Dialog open={!!active} onOpenChange={(o) => !o && setActive(null)}>
         <DialogContent className="max-w-lg bg-paper text-paper-foreground">
