@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { FamilyAccess } from "@/components/family-access";
-import { FamilyMembers } from "@/components/family-members";
+import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -78,7 +77,11 @@ function Admin() {
     return (
       <main className="mx-auto max-w-md px-4 py-20 text-center">
         <h1 className="text-4xl font-bold">Fyll pakkene</h1>
-        <FamilyAccess />
+        <p className="my-5 text-muted-foreground">Bare eieren kan endre bildene.</p>
+        <Button onClick={async () => {
+          const result = await lovable.auth.signInWithOAuth("lovable", { redirect_uri: window.location.origin });
+          if (result.error) toast.error("Kunne ikke logge inn som eier.");
+        }}>Logg inn som eier</Button>
       </main>
     );
 
@@ -98,7 +101,6 @@ function Admin() {
         <Button variant="secondary" onClick={() => supabase.auth.signOut()}>Logg ut</Button>
       </div>
       <p className="mb-6 text-muted-foreground">{Object.keys(rows).length} av 24 luker har bilde.</p>
-      <FamilyMembers />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 24 }, (_, i) => i + 1).map((day) => (
           <DoorEditor key={day} day={day} row={rows[day]} onUpload={upload} onCaption={saveCaption} />

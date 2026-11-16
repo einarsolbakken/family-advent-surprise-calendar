@@ -32,8 +32,8 @@ use the editor.
 - Door unlock logic lives in src/lib/advent.ts and is enforced server-side in getDoors; locked doors never get image URLs.
 - Only verified owners in the Vite development preview bypass door dates for testing; production always uses Oslo date locks.
 - Owner roles are provisioned only after identifying the intended owner; claim_admin checks existing ownership and never grants it to the first visitor.
-- Pages ships only dist/client from a separate SPA build; private reads use the Lovable-hosted bearer-authenticated calendar endpoint with exact-origin CORS and server-side family approval.
-- Approved family phone numbers live in an owner-managed RLS table; access checks require a confirmed phone in Auth rather than editable metadata, so unverified numbers cannot grant access. Private storage remains owner-only and image links expire after five minutes.
-- Normalize phone input to E.164 before Auth and membership writes to keep SMS delivery and access matching consistent.
+- Pages ships only dist/client from a separate SPA build; private reads use the Lovable-hosted bearer-authenticated calendar endpoint with exact-origin CORS and server-verified family sessions.
+- Shared family passwords are server secrets; the calendar endpoint issues expiring HMAC-signed read-only sessions, bound to the current password so password changes revoke access. Browser session storage contains only the session token, never the password.
+- Shared family sessions never grant owner roles or development date bypass; owner uploads retain separate Lovable account authentication and role checks. Private storage remains owner-only and image links expire after five minutes.
 - Stage Pages files from Nitro's .output/public into dist/client after recursive safety checks; never copy .output/server, because Pages must contain only browser files.
 - Set the SPA maskPath to the same repository base path as the router and asset base; rendering the shell at / outside that base creates an initial not-found state and hydration mismatch.

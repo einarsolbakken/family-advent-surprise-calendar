@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { fetchCalendar, type DoorView } from "@/lib/calendar-api";
+import { clearFamilySession, fetchCalendar, getFamilySession, type DoorView } from "@/lib/calendar-api";
 import { FamilyAccess } from "@/components/family-access";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,14 +40,17 @@ function Snow() {
 
 function Calendar() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [familySignedIn, setFamilySignedIn] = useState(false);
   const [ready, setReady] = useState(false);
-  const query = useQuery({ queryKey: ["doors", userId], queryFn: fetchCalendar, enabled: ready && !!userId, retry: false, staleTime: 30_000, refetchInterval: 120_000 });
+  const signedIn = familySignedIn || !!userId;
+  const query = useQuery({ queryKey: ["doors", userId, familySignedIn], queryFn: fetchCalendar, enabled: ready && signedIn, retry: false, staleTime: 30_000, refetchInterval: 120_000 });
   const data = query.data ?? [];
   const [opened, setOpened] = useState<number[]>([]);
   const [active, setActive] = useState<DoorView | null>(null);
 
   useEffect(() => {
     try { setOpened(JSON.parse(localStorage.getItem("opened-doors") ?? "[]")); } catch { setOpened([]); }
+    setFamilySignedIn(!!getFamilySession());
     void supabase.auth.getSession().then(({ data: { session } }) => { setUserId(session?.user.id ?? null); setReady(true); });
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
@@ -74,12 +77,12 @@ function Calendar() {
       <header className="relative mb-10 text-center">
         <p className="text-sm uppercase tracking-[0.3em] text-ribbon">Desember</p>
         <h1 className="mt-2 text-4xl font-bold sm:text-6xl">Familiens adventskalender</h1>
-        {userId && <p className="mt-3 text-muted-foreground">
+        {signedIn && <p className="mt-3 text-muted-foreground">
           {today ? `Luke ${today} er klar – trykk på pakken!` : "Første pakke kan åpnes 1. desember."}
         </p>}
       </header>
 
-      {!ready ? <p className="text-center">Laster…</p> : !userId ? <FamilyAccess /> : query.isPending ? <p className="text-center">Laster kalenderen…</p> : query.error ? <div className="text-center"><p role="alert">{query.error.message}</p><Button className="mt-4" variant="secondary" onClick={() => query.refetch()}>Prøv igjen</Button></div> : <ol className="relative grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-5 md:grid-cols-6">
+      {!ready ? <p className="text-center">Laster…</p> : !signedIn ? <FamilyAccess onSignedIn={() => setFamilySignedIn(true)} /> : query.isPending ? <p className="text-center">Laster kalenderen…</p> : query.error ? <div className="text-center"><p role="alert">{query.error.message}</p><Button className="mt-4" variant="secondary" onClick={() => query.refetch()}>Prøv igjen</Button></div> : <ol className="relative grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-5 md:grid-cols-6">
         {ORDER.map((day, i) => {
           const door = byDay.get(day);
           if (!door) return null;
@@ -113,7 +116,7 @@ function Calendar() {
         })}
       </ol>}
 
-      {userId && <nav className="mt-8 flex justify-center gap-3"><Button asChild variant="link"><Link to="/admin">Fyll pakkene</Link></Button><Button variant="ghost" onClick={() => supabase.auth.signOut()}>Logg ut</Button></nav>}
+      <nav className="mt-8 flex justify-center gap-3"><Button asChild variant="link"><Link to="/admin">Fyll pakkene</Link></Button>{signedIn && <Button variant="ghost" onClick={() => { clearFamilySession(); setFamilySignedIn(false); setUserId(null); setActive(null); void supabase.auth.signOut(); }}>Logg ut</Button>}</nav>
 
       <Dialog open={!!active} onOpenChange={(o) => !o && setActive(null)}>
         <DialogContent className="max-w-lg bg-paper text-paper-foreground">

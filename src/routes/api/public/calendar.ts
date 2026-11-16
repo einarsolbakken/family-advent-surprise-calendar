@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { calendarDays } from "@/lib/advent";
 import { allowedCalendarOrigin, calendarAccessDecision } from "@/lib/calendar-security";
 import type { DoorView } from "@/lib/calendar-api";
+import { familyPasswordInput, issueFamilySession, passwordMatches, verifyFamilySession } from "@/lib/family-session";
 
 export const Route = createFileRoute("/api/public/calendar")({
   server: {
@@ -14,10 +15,29 @@ export const Route = createFileRoute("/api/public/calendar")({
         }
         return new Response(null, { status: 204, headers: {
           ...(origin ? { "Access-Control-Allow-Origin": origin } : {}),
-          "Access-Control-Allow-Methods": "GET, OPTIONS",
-          "Access-Control-Allow-Headers": "Authorization",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Authorization, Content-Type",
           "Vary": "Origin",
         } });
+      },
+      POST: async ({ request }) => {
+        const origin = request.headers.get("origin");
+        const headers: Record<string, string> = { "Cache-Control": "private, no-store", "Vary": "Origin" };
+        if (!allowedCalendarOrigin(origin, new URL(request.url).origin, process.env['CALENDAR_PAGES_ORIGIN'])) {
+          return Response.json({ error: "Forbidden" }, { status: 403, headers });
+        }
+        if (origin) headers['Access-Control-Allow-Origin'] = origin;
+        const password = process.env['CALENDAR_FAMILY_PASSWORD'];
+        const secret = process.env['CALENDAR_SESSION_SECRET'];
+        if (!password || !secret) return Response.json({ error: "Unavailable" }, { status: 503, headers });
+        const body = await request.text();
+        if (body.length > 2048) return Response.json({ error: "Invalid input" }, { status: 400, headers });
+        let input;
+        try { input = familyPasswordInput.safeParse(JSON.parse(body)); }
+        catch { return Response.json({ error: "Invalid input" }, { status: 400, headers }); }
+        if (!input.success) return Response.json({ error: "Invalid input" }, { status: 400, headers });
+        if (!await passwordMatches(input.data.password, password)) return Response.json({ error: "Unauthorized" }, { status: 401, headers });
+        return Response.json({ token: await issueFamilySession(secret, password) }, { headers });
       },
       GET: async ({ request }) => {
         const origin = request.headers.get("origin");
@@ -28,6 +48,14 @@ export const Route = createFileRoute("/api/public/calendar")({
         if (origin) headers['Access-Control-Allow-Origin'] = origin;
         const token = request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
         if (!token) return Response.json({ error: "Unauthorized" }, { status: 401, headers });
+        let owner = false;
+        if (token.startsWith("family.")) {
+          const password = process.env['CALENDAR_FAMILY_PASSWORD'];
+          const secret = process.env['CALENDAR_SESSION_SECRET'];
+          if (!password || !secret || !await verifyFamilySession(token, secret, password)) {
+            return Response.json({ error: "Unauthorized" }, { status: 401, headers });
+          }
+        } else {
         const url = process.env['SUPABASE_URL'];
         const key = process.env['SUPABASE_PUBLISHABLE_KEY'];
         if (!url || !key) return Response.json({ error: "Unavailable" }, { status: 503, headers });
@@ -45,9 +73,11 @@ export const Route = createFileRoute("/api/public/calendar")({
         const { data: approved, error: accessError } = await client.rpc("has_calendar_access");
         const status = calendarAccessDecision(true, !accessError && approved === true);
         if (status !== 200) return Response.json({ error: "Forbidden" }, { status, headers });
-        const { data: owner } = await client.rpc("has_role", { _user_id: user.id, _role: "admin" });
+        const { data: isOwner } = await client.rpc("has_role", { _user_id: user.id, _role: "admin" });
+        owner = isOwner === true;
+        }
         const days = calendarDays(new Date(), import.meta.env.DEV && owner === true);
-        // Private storage signing is privileged; identity and family access were checked above.
+        // Shared sessions authorize read-only calendar access, never owner operations.
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const result: DoorView[] = Array.from({ length: 24 }, (_, i) => ({ day: i + 1, unlocked: days.includes(i + 1), imageUrl: null, caption: null }));
         if (days.length) {
