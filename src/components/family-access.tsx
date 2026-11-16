@@ -18,9 +18,8 @@ export function FamilyAccess({ onSignedIn }: { onSignedIn: () => void }) {
     finally { setBusy(false); }
   };
   return <div className="mx-auto max-w-sm py-8 text-center">
-    <p className="mb-5 text-muted-foreground">Logg inn for å åpne familiens kalender.</p>
     <form className="flex flex-col gap-3 text-left" onSubmit={(event) => { event.preventDefault(); void signIn(); }}>
-      <label htmlFor="family-password">Familiepassord</label>
+      <label htmlFor="family-password" className="text-center">Familiepassord</label>
       <Input id="family-password" type="password" autoComplete="current-password" required maxLength={256} value={password} onChange={(event) => setPassword(event.target.value)} />
       <Button disabled={busy}>{busy ? "Logger inn…" : "Åpne kalenderen"}</Button>
     </form>
