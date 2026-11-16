@@ -15,7 +15,7 @@ const pagesBase = process.env['PAGES_BASE_PATH'] || '/';
 export default defineConfig({
   vite: { base: pages ? pagesBase : '/' },
   tanstackStart: {
-    ...(pages ? { router: { basepath: pagesBase }, spa: { enabled: true, prerender: { outputPath: '/index.html' } }, prerender: { autoStaticPathsDiscovery: false } } : {}),
+    ...(pages ? { router: { basepath: pagesBase }, spa: { enabled: true, maskPath: pagesBase, prerender: { outputPath: '/index.html' } }, prerender: { autoStaticPathsDiscovery: false } } : {}),
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },

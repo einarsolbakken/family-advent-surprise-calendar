@@ -36,3 +36,4 @@ use the editor.
 - Approved family phone numbers live in an owner-managed RLS table; access checks require a confirmed phone in Auth rather than editable metadata, so unverified numbers cannot grant access. Private storage remains owner-only and image links expire after five minutes.
 - Normalize phone input to E.164 before Auth and membership writes to keep SMS delivery and access matching consistent.
 - Stage Pages files from Nitro's .output/public into dist/client after recursive safety checks; never copy .output/server, because Pages must contain only browser files.
+- Set the SPA maskPath to the same repository base path as the router and asset base; rendering the shell at / outside that base creates an initial not-found state and hydration mismatch.

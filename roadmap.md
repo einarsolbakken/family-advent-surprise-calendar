@@ -1,5 +1,8 @@
 # GitHub Pages calendar
 
+- [x] Align the static shell's initial address with the repository base path after renaming.
+- [ ] Verify renamed Pages first-load navigation after GitHub deploys the updated shell; requires the new Actions deployment.
+
 - [x] Correct Pages packaging to stage the actual public build output and test private-file exclusion.
 
 - [x] Replace family sign-in and approvals with phone numbers and SMS codes, without profiles.

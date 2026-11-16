@@ -14,4 +14,10 @@ describe("App routing", () => {
 
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
+  it("matches the renamed repository on first load with or without a trailing slash", () => {
+    const router = createRouter({ routeTree, basepath: '/krossernKalender/', context: { queryClient: new QueryClient() } });
+    expect(router.matchRoutes('/krossernKalender/').at(-1)?.routeId).toBe('/');
+    expect(router.matchRoutes('/krossernKalender').at(-1)?.routeId).toBe('/');
+    expect(router.matchRoutes('/krossernKalender/admin').at(-1)?.routeId).toBe('/admin');
+  });
 });
