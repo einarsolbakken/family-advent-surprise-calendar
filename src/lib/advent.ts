@@ -15,3 +15,10 @@ export function isDoorOpenable(door: number, now: Date = new Date()) {
 export function unlockedDays(now: Date = new Date()) {
   return Array.from({ length: 24 }, (_, i) => i + 1).filter((d) => isDoorOpenable(d, now));
 }
+
+// Only the development preview bypasses the date lock; production stays locked.
+export function calendarDays(now: Date, developmentPreview: boolean) {
+  return developmentPreview
+    ? Array.from({ length: 24 }, (_, i) => i + 1)
+    : unlockedDays(now);
+}

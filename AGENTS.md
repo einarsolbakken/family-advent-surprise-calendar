@@ -30,4 +30,5 @@ use the editor.
 <!-- LOVABLE:END -->
 
 - Door unlock logic lives in src/lib/advent.ts and is enforced server-side in getDoors; locked doors never get image URLs.
+- Only the Vite development preview bypasses door dates for testing; production always uses Oslo date locks, so publishing cannot expose future images.
 - Owner role is claimed by the first sign-in via claim_admin(); uploads go to the private "advent" bucket guarded by has_role.

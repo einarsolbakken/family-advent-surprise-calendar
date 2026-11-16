@@ -1,11 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
-import { unlockedDays } from "./advent";
+import { calendarDays } from "./advent";
 
 export type DoorView = { day: number; unlocked: boolean; imageUrl: string | null; caption: string | null };
 
 // Locked doors never leave the server with an image, so nobody can peek early.
 export const getDoors = createServerFn({ method: "GET" }).handler(async (): Promise<DoorView[]> => {
-  const open = unlockedDays();
+  const open = calendarDays(new Date(), import.meta.env.DEV);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const rows = open.length
     ? (await supabaseAdmin.from("doors").select("day,image_path,caption").in("day", open)).data ?? []
