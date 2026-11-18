@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { clearFamilySession, fetchCalendar, getFamilySession, type DoorView } from "@/lib/calendar-api";
+import { calendarHeadline } from "@/lib/advent";
 import { FamilyAccess } from "@/components/family-access";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,7 +70,9 @@ function Calendar() {
   };
 
   const byDay = new Map(data.map((d) => [d.day, d]));
-  const today = Math.max(0, ...data.filter((d) => d.unlocked).map((d) => d.day));
+  const openDays = data.filter((d) => d.unlocked).map((d) => d.day);
+  const today = Math.max(0, ...openDays);
+  const headline = calendarHeadline(openDays, opened);
 
   return (
     <main className="relative mx-auto max-w-5xl px-4 py-12">
@@ -77,9 +80,7 @@ function Calendar() {
       <header className="relative mb-10 text-center">
         <p className="text-sm uppercase tracking-[0.3em] text-ribbon">Desember</p>
         <h1 className="mt-2 text-4xl font-bold sm:text-6xl">Krossern's bildekalender 2026</h1>
-        {signedIn && <p className="mt-3 text-muted-foreground">
-          {today ? `Luke ${today} er klar – trykk på pakken!` : "Første pakke kan åpnes 1. desember."}
-        </p>}
+        {signedIn && <p className="mt-3 text-muted-foreground">{headline}</p>}
       </header>
 
       {!ready ? <p className="text-center">Laster…</p> : !signedIn ? <FamilyAccess onSignedIn={() => setFamilySignedIn(true)} /> : query.isPending ? <p className="animate-in fade-in duration-500 text-center">Laster kalenderen…</p> : query.error ? <div className="text-center"><p role="alert">{query.error.message}</p><Button className="mt-4" variant="secondary" onClick={() => query.refetch()}>Prøv igjen</Button></div> : <ol className="animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-700 ease-out relative grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-5 md:grid-cols-6">

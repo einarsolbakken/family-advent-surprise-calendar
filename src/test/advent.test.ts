@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calendarDays, isDoorOpenable } from "@/lib/advent";
+import { calendarDays, calendarHeadline, isDoorOpenable } from "@/lib/advent";
 
 describe("door unlocking", () => {
   it("door 5 is locked on 4 December (Oslo)", () => {
@@ -40,5 +40,16 @@ describe("door unlocking", () => {
     for (const source of sources) {
       expect(source.default).not.toContain("calendarDays(new Date(), true)");
     }
+  });
+  it("asks for the package to be opened before today's door is opened", () => {
+    expect(calendarHeadline([1, 2, 3], [1, 2])).toBe(
+      "Dagens luke er klar til å åpnes - trykk på pakken",
+    );
+  });
+  it("says the door is opened once today's door has been opened", () => {
+    expect(calendarHeadline([1, 2, 3], [1, 2, 3])).toBe("Dagens luke er åpnet");
+  });
+  it("says the first package comes 1 December before anything is open", () => {
+    expect(calendarHeadline([], [])).toBe("Første pakke kan åpnes 1. desember.");
   });
 });

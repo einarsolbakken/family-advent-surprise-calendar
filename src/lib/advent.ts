@@ -22,3 +22,12 @@ export function calendarDays(now: Date, developmentPreview: boolean) {
     ? Array.from({ length: 24 }, (_, i) => i + 1)
     : unlockedDays(now);
 }
+
+// Which headline the calendar shows above the doors.
+export function calendarHeadline(openDays: number[], openedDays: number[]) {
+  const today = openDays.length ? Math.max(...openDays) : 0;
+  if (!today) return "Første pakke kan åpnes 1. desember.";
+  return openedDays.includes(today)
+    ? "Dagens luke er åpnet"
+    : "Dagens luke er klar til å åpnes - trykk på pakken";
+}

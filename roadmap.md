@@ -3,6 +3,7 @@
 - [x] Verify preview password contact fix and password visibility control on mobile and desktop with real password login.
 
 - [x] Replace SMS sign-in with a server-verified shared family password; desktop/mobile login, wrong-password denial, refresh and sign-out verified with real password.
+- [x] Show "Dagens luke er klar til å åpnes - trykk på pakken" before today's door opens and "Dagens luke er åpnet" after.
 - [x] Restore the Oslo date lock so one door opens per day from 1 December; verify preview and published sites.
 - [ ] Deploy shared-password access to the public sites; requires Lovable publishing and the next GitHub Pages Actions deployment.
 
