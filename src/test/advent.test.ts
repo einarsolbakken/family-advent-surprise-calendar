@@ -19,4 +19,26 @@ describe("door unlocking", () => {
   it("keeps all production doors locked before December", () => {
     expect(calendarDays(new Date("2026-11-16T12:23:00Z"), false)).toEqual([]);
   });
+  it("opens only door 1 on 1 December", () => {
+    expect(calendarDays(new Date("2026-12-01T00:30:00Z"), false)).toEqual([1]);
+  });
+  it("opens one new door each day and keeps earlier days open", () => {
+    expect(calendarDays(new Date("2026-12-14T12:00:00Z"), false)).toEqual(
+      Array.from({ length: 14 }, (_, i) => i + 1),
+    );
+  });
+  it("has every door open on 24 December", () => {
+    expect(calendarDays(new Date("2026-12-24T12:00:00Z"), false)).toEqual(
+      Array.from({ length: 24 }, (_, i) => i + 1),
+    );
+  });
+  it("never hands out the test bypass from the shipped calendar code", async () => {
+    const sources = await Promise.all([
+      import("@/lib/doors.functions?raw"),
+      import("@/routes/api/public/calendar?raw"),
+    ]);
+    for (const source of sources) {
+      expect(source.default).not.toContain("calendarDays(new Date(), true)");
+    }
+  });
 });
