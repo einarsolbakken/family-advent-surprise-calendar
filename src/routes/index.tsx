@@ -118,7 +118,7 @@ function Calendar() {
                 {!door.unlocked ? (
                   <span
                     aria-hidden="true"
-                    className={`absolute right-1.5 top-1.5 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-gold/40 bg-background/85 text-gold shadow-[var(--shadow-gift)] transition-opacity duration-200 ${
+                    className={`absolute right-1.5 top-1.5 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-paper/25 bg-background/85 text-paper shadow-[var(--shadow-gift)] transition-opacity duration-200 ${
                       lockedFlash?.day === day
                         ? "opacity-100"
                         : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
