@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { clearFamilySession, fetchCalendar, getFamilySession, type DoorView } from "@/lib/calendar-api";
+import { Lock } from "lucide-react";
 import { calendarHeadline } from "@/lib/advent";
 import { FamilyAccess } from "@/components/family-access";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,13 @@ function Calendar() {
   const data = query.data ?? [];
   const [opened, setOpened] = useState<number[]>([]);
   const [active, setActive] = useState<DoorView | null>(null);
+  const [lockedFlash, setLockedFlash] = useState<{ day: number; n: number } | null>(null);
+
+  useEffect(() => {
+    if (!lockedFlash) return;
+    const timer = setTimeout(() => setLockedFlash(null), 1600);
+    return () => clearTimeout(timer);
+  }, [lockedFlash]);
 
   useEffect(() => {
     try { setOpened(JSON.parse(localStorage.getItem("opened-doors") ?? "[]")); } catch { setOpened([]); }
@@ -62,7 +70,10 @@ function Calendar() {
   }, []);
 
   const open = (door: DoorView) => {
-    if (!door.unlocked) return;
+    if (!door.unlocked) {
+      setLockedFlash((prev) => ({ day: door.day, n: (prev?.n ?? 0) + 1 }));
+      return;
+    }
     const next = Array.from(new Set([...opened, door.day]));
     setOpened(next);
     localStorage.setItem("opened-doors", JSON.stringify(next));
@@ -93,16 +104,28 @@ function Calendar() {
             <li key={day}>
               <Button variant="ghost"
                 onClick={() => open(door)}
-                disabled={!door.unlocked}
+                aria-disabled={!door.unlocked}
                 aria-label={door.unlocked ? `Åpne luke ${day}` : `Luke ${day} er låst`}
-                className={`group relative flex aspect-square h-auto w-full items-center justify-center overflow-hidden rounded-lg p-0 transition-transform ${
+                className={`group relative flex aspect-square h-auto w-full items-center justify-center overflow-hidden rounded-lg p-0 transition-[transform,opacity] duration-200 ${
                   isOpen
                     ? "bg-paper"
-                    : `gift ${i % 2 ? "bg-gift-a" : "bg-gift-b"} ${door.unlocked ? "hover:-translate-y-1" : "cursor-not-allowed opacity-70"}`
+                    : `gift ${i % 2 ? "bg-gift-a hover:bg-gift-a!" : "bg-gift-b hover:bg-gift-b!"} ${door.unlocked ? "hover:-translate-y-1" : "cursor-not-allowed opacity-70 hover:opacity-100"}`
                 } ${isToday ? "animate-wiggle shadow-[var(--glow-gold)]" : ""}`}
               >
                 {isOpen && door.imageUrl ? (
                   <img src={door.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                ) : null}
+                {!door.unlocked ? (
+                  <span
+                    aria-hidden="true"
+                    className={`absolute right-1.5 top-1.5 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-gold/40 bg-background/85 text-gold shadow-[var(--shadow-gift)] transition-opacity duration-200 ${
+                      lockedFlash?.day === day
+                        ? "opacity-100"
+                        : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                    }`}
+                  >
+                    <Lock className="h-3.5 w-3.5" />
+                  </span>
                 ) : null}
                 <span
                   className={`relative z-10 font-display text-2xl font-bold sm:text-3xl ${

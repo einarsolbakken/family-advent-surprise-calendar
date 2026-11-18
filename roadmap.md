@@ -1,5 +1,7 @@
 # GitHub Pages calendar
 
+- [x] Show a padlock marker on a locked door when hovering, focusing or tapping it; the door still stays closed.
+
 - [x] Verify preview password contact fix and password visibility control on mobile and desktop with real password login.
 
 - [x] Replace SMS sign-in with a server-verified shared family password; desktop/mobile login, wrong-password denial, refresh and sign-out verified with real password.
