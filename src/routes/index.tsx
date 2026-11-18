@@ -109,7 +109,7 @@ function Calendar() {
                 className={`group relative flex aspect-square h-auto w-full items-center justify-center overflow-hidden rounded-lg p-0 transition-[transform,opacity] duration-200 ${
                   isOpen
                     ? "bg-paper"
-                    : `gift ${i % 2 ? "bg-gift-a hover:bg-gift-a!" : "bg-gift-b hover:bg-gift-b!"} ${door.unlocked ? "hover:-translate-y-1" : "cursor-not-allowed opacity-70 hover:opacity-100"}`
+                    : `gift ${i % 2 ? "bg-gift-a hover:bg-gift-a!" : "bg-gift-b hover:bg-gift-b!"} ${door.unlocked ? "hover:-translate-y-1" : "opacity-70 hover:opacity-100"}`
                 } ${isToday ? "animate-wiggle shadow-[var(--glow-gold)]" : ""}`}
               >
                 {isOpen && door.imageUrl ? (
