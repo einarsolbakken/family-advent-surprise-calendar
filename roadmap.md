@@ -3,7 +3,7 @@
 - [x] Verify preview password contact fix and password visibility control on mobile and desktop with real password login.
 
 - [x] Replace SMS sign-in with a server-verified shared family password; desktop/mobile login, wrong-password denial, refresh and sign-out verified with real password.
-- [ ] Restore the Oslo date lock so one door opens per day from 1 December; verify preview and published sites.
+- [x] Restore the Oslo date lock so one door opens per day from 1 December; verify preview and published sites.
 - [ ] Deploy shared-password access to the public sites; requires Lovable publishing and the next GitHub Pages Actions deployment.
 
 - [x] Align the static shell's initial address with the repository base path after renaming.
